@@ -235,13 +235,17 @@ def uniformCostSearch(gameState):
 def calc_manhattan(a, b):
         return abs(a[0] - b[0]) + abs(a[1] - b[1])
 
-def heuristic(posBox):
+def heuristic1(posBox): # Khoang cach giua cac hop va target
     p1 = sorted(posBox)
     p2 = sorted(posGoals)
     total = 0
     for i in range(len(p1)):
         total += calc_manhattan(p1[i], p2[i])
     return total
+
+def heuristic2(posPlayer, posBox): # Khoang cach gan nhat cua nguoi choi va cac hop
+    distances = [calc_manhattan(posPlayer, posBox[i]) for i in range(len(posBox))]
+    return min(distances)
 
 def aStarSearch(gameState):
     """Implement uniformCostSearch approach"""
@@ -269,8 +273,10 @@ def aStarSearch(gameState):
                 if isFailed(newPosBox): # Neu vi tri cac thung ko the giai duoc 
                     continue # Qua hanh dong ke tiep trong cac hanh dong
                 newActions = node_action + [action[-1]] # Chuoi hanh dong moi
-                frontier.push(node + [(newPosPlayer, newPosBox)], cost(newActions[1:]) + heuristic(newPosBox)) # Them vao frontier trang thai moi chua vi tri moi cua nguoi choi va cac thung va cost cua chuoi hanh dong tuong ung
-                actions.push(node_action + [action[-1]], cost(newActions[1:]) + heuristic(newPosBox)) # Them vao actions chuoi hanh dong moi va cost cua chuoi hanh dong tuong ung
+                #frontier.push(node + [(newPosPlayer, newPosBox)], cost(newActions[1:]) + heuristic1(newPosBox)) # Them vao frontier trang thai moi chua vi tri moi cua nguoi choi va cac thung va cost + heuristic1 cua chuoi hanh dong tuong ung
+                #actions.push(node_action + [action[-1]], cost(newActions[1:]) + heuristic1(newPosBox)) # Them vao actions chuoi hanh dong moi va cost + heuristic1 cua chuoi hanh dong tuong ung
+                frontier.push(node + [(newPosPlayer, newPosBox)], cost(newActions[1:]) + heuristic2(newPosPlayer, newPosBox)) # Them vao frontier trang thai moi chua vi tri moi cua nguoi choi va cac thung va cost + heuristic1 cua chuoi hanh dong tuong ung
+                actions.push(node_action + [action[-1]], cost(newActions[1:]) + heuristic2(newPosPlayer, newPosBox)) # Them vao actions chuoi hanh dong moi va cost + heuristic1 cua chuoi hanh dong tuong ung
     return temp # Tra ve mang luu cac hanh dong dan den goal
 
 """Read command"""
