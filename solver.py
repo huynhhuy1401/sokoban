@@ -232,6 +232,47 @@ def uniformCostSearch(gameState):
                 actions.push(node_action + [action[-1]], cost(newActions[1:])) # Them vao actions chuoi hanh dong moi va cost cua chuoi hanh dong tuong ung
     return temp # Tra ve mang luu cac hanh dong dan den goal
 
+def calc_manhattan(a, b):
+        return abs(a[0] - b[0]) + abs(a[1] - b[1])
+
+def heuristic(posBox):
+    p1 = sorted(posBox)
+    p2 = sorted(posGoals)
+    total = 0
+    for i in range(len(p1)):
+        total += calc_manhattan(p1[i], p2[i])
+    return total
+
+def aStarSearch(gameState):
+    """Implement uniformCostSearch approach"""
+    beginBox = PosOfBoxes(gameState) # Vi tri bat dau cua cac thung
+    beginPlayer = PosOfPlayer(gameState) # Vi tri bat dau cua nguoi choi
+
+    startState = (beginPlayer, beginBox) # Trang thai khoi dau vd: ((2, 2), ((2, 3), (3, 4), (4, 4), (6, 1), (6, 4), (6, 5)))
+    frontier = PriorityQueue() # Khai bao frontier de luu cac trang thai
+    frontier.push([startState], 0) # Dua vao frontier trang thai ban dau va cost cua no (bang 0)
+    exploredSet = set() # exploredSet de chua cac trang thai da mo rong
+    actions = PriorityQueue() # Khai bao actions 
+    actions.push([0], 0) # Luu tru hanh dong tuong ung voi trang thai khoi dau vao actions va cost cua hanh dong
+    temp = [] # mang temp de luu cac hanh dong dan den goal
+    ### Implement uniform ((cost search here
+    while not frontier.isEmpty(): # while frotiner chua trong
+        node = frontier.pop() # lay ra trang thai co cost thap nhat
+        node_action = actions.pop() # lay ra hanh dong tuong ung voi trang thai tren
+        if isEndState(node[-1][-1]): # neu day la trang thai dich (goal)
+            temp += node_action[1:] # luu cac hanh dong dan den goal vao temp
+            break # dung vong lap
+        if node[-1] not in exploredSet: # Neu trang thai trong node chua duoc mo rong
+            exploredSet.add(node[-1]) # them trang thai trong node vao exploredSet
+            for action in legalActions(node[-1][0], node[-1][1]): # Voi moi hanh dong tu cac hanh dong co the thuc hien duoc tu trang thai hien tai trong node
+                newPosPlayer, newPosBox = updateState(node[-1][0], node[-1][1], action) # Vi tri moi cua nguoi choi va cac thung dua vao hanh dong duoc thuc hien 
+                if isFailed(newPosBox): # Neu vi tri cac thung ko the giai duoc 
+                    continue # Qua hanh dong ke tiep trong cac hanh dong
+                newActions = node_action + [action[-1]] # Chuoi hanh dong moi
+                frontier.push(node + [(newPosPlayer, newPosBox)], cost(newActions[1:]) + heuristic(newPosBox)) # Them vao frontier trang thai moi chua vi tri moi cua nguoi choi va cac thung va cost cua chuoi hanh dong tuong ung
+                actions.push(node_action + [action[-1]], cost(newActions[1:]) + heuristic(newPosBox)) # Them vao actions chuoi hanh dong moi va cost cua chuoi hanh dong tuong ung
+    return temp # Tra ve mang luu cac hanh dong dan den goal
+
 """Read command"""
 def readCommand(argv):
     from optparse import OptionParser
@@ -262,6 +303,8 @@ def get_move(layout, player_pos, method):
         result = breadthFirstSearch(gameState)    
     elif method == 'ucs':
         result = uniformCostSearch(gameState)
+    elif method == 'astar':
+        result = aStarSearch(gameState)
     else:
         raise ValueError('Invalid method.')
     time_end=time.time()
